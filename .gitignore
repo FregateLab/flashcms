@@ -1,0 +1,10 @@
+# flashcms — package gitignore
+# This repo only ships the CMS package; no consuming app lives here.
+
+.DS_Store
+*.log
+
+# Just in case someone accidentally installs consumer deps here.
+node_modules
+.next
+.env*.local

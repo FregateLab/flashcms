@@ -1,0 +1,8 @@
+{
+  "_comment": "Merge into your tsconfig.json compilerOptions. The @/* alias is what every CMS file uses to import from db/, lib/, components/.",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "flashcms",
+  "repository": "git@github.com:FregateLab/flashcms.git",
+  "version": "1.0.0",
+  "releasedAt": "2026-07-05T00:00:00Z",
+  "summary": "Initial extracted release. Puck pages, TipTap posts, media library, users, analytics + Web Vitals, SEO, site-settings.",
+  "notes": [
+    "Snapshot cut from the sfh-group-website working codebase.",
+    "See docs/extending.md for the pattern to add tables/blocks/routes."
+  ],
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-07-05",
+      "changes": [
+        "Initial extracted release of flashcms.",
+        "Includes Puck page editor, TipTap posts, media library, users + roles, analytics (visits + Web Vitals), SEO, site-settings, in-CMS update flow, and a full admin UI."
+      ]
+    }
+  ]
+}

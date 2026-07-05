@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1783161868861,
+      "tag": "0000_natural_midnight",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783182291119,
+      "tag": "0001_demonic_molten_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783195205339,
+      "tag": "0002_gifted_smiling_tiger",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1783240587340,
+      "tag": "0003_fresh_monster_badoon",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783241197883,
+      "tag": "0004_perpetual_krista_starr",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1783249677079,
+      "tag": "0005_whole_azazel",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1783254467908,
+      "tag": "0006_magical_lady_ursula",
+      "breakpoints": true
+    }
+  ]
+}

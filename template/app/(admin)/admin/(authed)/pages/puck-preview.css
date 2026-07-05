@@ -1,0 +1,52 @@
+/* ---------------------------------------------------------------------
+   Puck editor preview overrides.
+   The public site relies on ClientEffects.tsx to set data-revealed="true"
+   on [data-reveal] elements when they scroll into view, and to rotate
+   .hero__slide/.hero__slide-panel and other animated content. Inside
+   the Puck editor iframe, ClientEffects doesn't run, so content stays
+   invisible. These overrides make everything visible in the editor
+   without breaking the public site's animations.
+   --------------------------------------------------------------------- */
+
+/* Force the generic reveal fade-in to always be "revealed". */
+[data-reveal],
+[data-reveal] * {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+}
+
+/* Hero carousel: without JS, only the first slide has data-active="true".
+   Everything is already positioned absolutely with opacity 0 by default;
+   force the active slide visible + keep the rest hidden so we still see
+   what the editor set as slide 0. */
+.hero__slide {
+    opacity: 0;
+}
+.hero__slide[data-active="true"] {
+    opacity: 1 !important;
+    animation: none !important;
+}
+
+.hero__slide-panel {
+    opacity: 0;
+    pointer-events: none;
+}
+.hero__slide-panel[data-active="true"] {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* Partners + About gallery marquees — pause the keyframes in the
+   editor so the strip doesn't slide during editing. */
+.partners__track,
+.aboutGallery__track {
+    animation: none !important;
+    transform: none !important;
+}
+
+/* Count-up numbers: on the public site, ClientEffects replaces the
+   text with 0 and animates upward. In the editor we want the raw
+   value to just show. Nothing to override here — the CSS is display
+   only — but leaving a note for future readers. */
