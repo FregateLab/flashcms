@@ -2,14 +2,24 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "flashcms",
   "repository": "git@github.com:FregateLab/flashcms.git",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "releasedAt": "2026-07-06T00:00:00Z",
-  "summary": "Nav progress feedback — top red progress bar + route skeletons in the admin so slow navigations feel responsive.",
+  "summary": "Multi-site scoping — SITE_SLUG (+ SITE_NAME / SITE_DOMAIN) env vars let many projects share one DB with isolated content.",
   "notes": [
     "Snapshot cut from the sfh-group-website working codebase.",
     "See docs/extending.md for the pattern to add tables/blocks/routes."
   ],
   "changelog": [
+    {
+      "version": "1.0.2",
+      "date": "2026-07-06",
+      "changes": [
+        "lib/site.ts now reads SITE_SLUG from env (falls back to 'sfhgroup' so existing installs keep working).",
+        "scripts/seed.ts reads SITE_SLUG / SITE_NAME / SITE_DOMAIN so one script can bootstrap any tenant.",
+        "snippets/env.example documents the new vars.",
+        "Enables installing flashcms into multiple Next.js projects that share one Postgres — pages, posts, media, and analytics are already foreign-keyed to sites.id."
+      ]
+    },
     {
       "version": "1.0.1",
       "date": "2026-07-06",

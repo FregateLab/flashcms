@@ -21,7 +21,11 @@ async function main() {
   }
 
   // ---- site ---------------------------------------------------------
-  const siteSlug = 'sfhgroup';
+  // SITE_SLUG (+ optional SITE_NAME / SITE_DOMAIN) are read from env so
+  // one seed script can bootstrap many projects that share this DB.
+  const siteSlug = process.env.SITE_SLUG || 'sfhgroup';
+  const siteName = process.env.SITE_NAME || 'Society for Family Health';
+  const siteDomain = process.env.SITE_DOMAIN || 'sfhgroup.org';
   const [existingSite] = await db.select().from(sites).where(eq(sites.slug, siteSlug));
   const site =
     existingSite ??
@@ -30,8 +34,8 @@ async function main() {
         .insert(sites)
         .values({
           slug: siteSlug,
-          name: 'Society for Family Health',
-          domain: 'sfhgroup.org',
+          name: siteName,
+          domain: siteDomain,
         })
         .returning()
     )[0];
