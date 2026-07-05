@@ -1059,6 +1059,164 @@ textarea.admin-input { resize: vertical; min-height: 96px; }
   letter-spacing: 0.02em;
 }
 
+/* ---------- Route-navigation progress bar --------------------------- */
+.admin-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 10000;
+  pointer-events: none;
+  background: linear-gradient(90deg, var(--sfh-red) 0%, var(--sfh-red-deep) 100%);
+  box-shadow: 0 0 8px rgba(227, 27, 34, 0.55);
+  transform: scaleX(0);
+  transform-origin: 0 0;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.admin-progress[data-state="loading"] {
+  opacity: 1;
+  animation: adminProgress 8s cubic-bezier(0.05, 0.9, 0.3, 0.99) forwards;
+}
+.admin-progress[data-state="done"] {
+  opacity: 0;
+  transform: scaleX(1);
+  transition: transform 0.15s ease, opacity 0.28s ease 0.15s;
+}
+@keyframes adminProgress {
+  0%   { transform: scaleX(0); }
+  15%  { transform: scaleX(0.25); }
+  35%  { transform: scaleX(0.5); }
+  60%  { transform: scaleX(0.72); }
+  85%  { transform: scaleX(0.88); }
+  100% { transform: scaleX(0.94); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-progress[data-state="loading"] {
+    animation: none;
+    transform: scaleX(0.6);
+  }
+  .admin-progress[data-state="done"] { transition: opacity 0.2s; }
+}
+/* Busy cursor while a route is loading. */
+body:has(.admin-progress[data-state="loading"]) { cursor: progress; }
+
+/* Skeleton fallback rendered by app-router loading.tsx */
+.admin-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: adminSkelFade 0.2s ease;
+}
+.admin-loading__title,
+.admin-loading__lede,
+.admin-loading__card {
+  background: linear-gradient(
+    90deg,
+    rgba(15, 23, 42, 0.05) 0%,
+    rgba(15, 23, 42, 0.10) 50%,
+    rgba(15, 23, 42, 0.05) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: 10px;
+  animation: adminSkelShimmer 1.4s ease-in-out infinite;
+}
+.admin-loading__title { height: 28px; width: 240px; }
+.admin-loading__lede  { height: 14px; width: 60%; max-width: 520px; }
+.admin-loading__grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.admin-loading__card { height: 140px; border-radius: 12px; }
+@keyframes adminSkelShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes adminSkelFade {
+  from { opacity: 0; } to { opacity: 1; }
+}
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* ---------- CMS updates page ---------------------------------------- */
+.cmsUpd {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.cmsUpd__hero {
+  border-left: 3px solid transparent;
+}
+.cmsUpd__hero--update-available {
+  border-left-color: var(--sfh-red);
+  background: linear-gradient(90deg, var(--sfh-red-soft) 0%, #fff 30%);
+}
+.cmsUpd__hero--up-to-date { border-left-color: var(--admin-success); }
+.cmsUpd__hero--ahead { border-left-color: var(--sfh-navy); }
+.cmsUpd__hero--unknown { border-left-color: var(--admin-border-strong); }
+.cmsUpd__version {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--admin-ink);
+  margin-top: 4px;
+}
+.cmsUpd__meta { font-size: 12px; color: var(--admin-ink-3); margin-top: 4px; }
+.cmsUpd__summary {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--admin-ink-2);
+  line-height: 1.5;
+}
+.cmsUpd__changelog {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+}
+.cmsUpd__release + .cmsUpd__release {
+  border-top: 1px solid var(--admin-border);
+  padding-top: 14px;
+}
+.cmsUpd__releaseHead {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.cmsUpd__releaseVer {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--sfh-red-deep);
+}
+.cmsUpd__releaseDate { font-size: 12px; color: var(--admin-ink-3); }
+.cmsUpd__changelog ul,
+.cmsUpd__notes {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--admin-ink);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.cmsUpd__notes { margin-top: 12px; }
+.cmsUpd__envGrid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr;
+  margin-top: 4px;
+}
+@media (min-width: 720px) {
+  .cmsUpd__envGrid { grid-template-columns: 1fr 1fr; }
+}
+
 /* ---------- Status pills --------------------------------------------- */
 .admin-pill {
   display: inline-flex;

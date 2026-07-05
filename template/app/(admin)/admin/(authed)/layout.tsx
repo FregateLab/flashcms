@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { auth, signOut } from '@/lib/auth';
+import TopProgress from './TopProgress';
 
 // Chrome shared by every authenticated admin page. /admin/login lives
 // outside this route group so it has no sidebar.
@@ -16,6 +18,9 @@ export default async function AuthedAdminLayout({
 
   return (
     <div className="admin-shell-wrap">
+      <Suspense fallback={null}>
+        <TopProgress />
+      </Suspense>
       <aside className="admin-sidebar" aria-label="Primary navigation">
         <Link href="/admin" className="admin-brand">
           <span className="admin-brand__mark" aria-hidden="true">S</span>
@@ -41,6 +46,9 @@ export default async function AuthedAdminLayout({
             <>
               <span className="admin-nav__section">Team</span>
               <Link href="/admin/users">Users</Link>
+
+              <span className="admin-nav__section">System</span>
+              <Link href="/admin/cms">CMS updates</Link>
             </>
           )}
         </nav>

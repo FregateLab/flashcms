@@ -2,14 +2,23 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "flashcms",
   "repository": "git@github.com:FregateLab/flashcms.git",
-  "version": "1.0.0",
-  "releasedAt": "2026-07-05T00:00:00Z",
-  "summary": "Initial extracted release. Puck pages, TipTap posts, media library, users, analytics + Web Vitals, SEO, site-settings.",
+  "version": "1.0.1",
+  "releasedAt": "2026-07-06T00:00:00Z",
+  "summary": "Nav progress feedback — top red progress bar + route skeletons in the admin so slow navigations feel responsive.",
   "notes": [
     "Snapshot cut from the sfh-group-website working codebase.",
     "See docs/extending.md for the pattern to add tables/blocks/routes."
   ],
   "changelog": [
+    {
+      "version": "1.0.1",
+      "date": "2026-07-06",
+      "changes": [
+        "Add TopProgress client component — global link/form click listener that shows a red progress bar at the top of the viewport during route transitions and clears when the new pathname lands.",
+        "Add loading.tsx skeleton fallback in app/(admin)/admin/(authed) so slow segment fetches render a shimmer instead of freezing the current UI.",
+        "Add busy cursor + prefers-reduced-motion fallback and 15s safety timeout so the bar never sticks."
+      ]
+    },
     {
       "version": "1.0.0",
       "date": "2026-07-05",
