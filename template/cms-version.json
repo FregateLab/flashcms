@@ -2,14 +2,24 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "flashcms",
   "repository": "git@github.com:FregateLab/flashcms.git",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "releasedAt": "2026-07-06T00:00:00Z",
-  "summary": "Multi-site scoping — SITE_SLUG (+ SITE_NAME / SITE_DOMAIN) env vars let many projects share one DB with isolated content.",
+  "summary": "Data-driven /admin/pages grouping — `section` and `icon` are now per-entry fields on KNOWN_EDITABLE_PAGES so each project only edits one file.",
   "notes": [
     "Snapshot cut from the sfh-group-website working codebase.",
     "See docs/extending.md for the pattern to add tables/blocks/routes."
   ],
   "changelog": [
+    {
+      "version": "1.0.3",
+      "date": "2026-07-06",
+      "changes": [
+        "lib/known-routes.ts entries now carry `section` and `icon` fields; the /admin/pages listing derives grouping and glyphs from the data instead of a hardcoded sectionFor() switch.",
+        "Template ships a minimal starter list (home + about) so a fresh install no longer inherits SFH-group's routes.",
+        "New knownSectionOrder() helper returns unique sections in first-appearance order.",
+        "INSTALL.md Step 9 documents the section/icon fields."
+      ]
+    },
     {
       "version": "1.0.2",
       "date": "2026-07-06",

@@ -1,25 +1,22 @@
-// The fixed list of marketing routes that are editable in the CMS.
-// Adding a page to this list makes it appear in /admin/pages; wiring
-// the actual public route to render Puck data is a per-page step.
+// Customise this file per-project — it drives the `/admin/pages` view.
+//
+// Each entry:
+//   slug     — DB key; also used in the /admin/pages/… URL
+//   label    — human-readable name
+//   path     — public-site path this page renders at
+//   section  — group heading in the /admin/pages table
+//   icon     — glyph rendered next to the label (any unicode char)
+//   ready    — false = show but disable editing (for future/wip routes)
+//
+// The /admin/pages view groups entries by `section`, preserving the
+// order of first appearance for both the group and the pages within it.
+//
+// After adding a route here, wire the matching public route in
+// app/<slug>/page.tsx to render CMS data — see lib/render-cms-page.tsx
+// for the pattern.
 export const KNOWN_EDITABLE_PAGES = [
-  { slug: 'home', label: 'Home', path: '/', ready: true },
-  { slug: 'about', label: 'About SFH', path: '/about', ready: true },
-  { slug: 'countries', label: 'Countries', path: '/countries', ready: true },
-  { slug: 'countries/nigeria', label: 'SFH Nigeria', path: '/countries/nigeria', ready: true },
-  { slug: 'countries/ghana', label: 'SFH Ghana', path: '/countries/ghana', ready: true },
-  { slug: 'countries/sierra-leone', label: 'SFH Sierra Leone', path: '/countries/sierra-leone', ready: true },
-  { slug: 'countries/liberia', label: 'SFH Liberia', path: '/countries/liberia', ready: true },
-  { slug: 'countries/cote-divoire', label: 'SFH Côte d’Ivoire', path: '/countries/cote-divoire', ready: true },
-  { slug: 'entities', label: 'Entities', path: '/entities', ready: true },
-  { slug: 'impact', label: 'Impact', path: '/impact', ready: true },
-  { slug: 'products', label: 'Products', path: '/products', ready: true },
-  { slug: 'careers', label: 'Careers', path: '/careers', ready: true },
-  { slug: 'press', label: 'Press', path: '/press', ready: true },
-  { slug: 'reports', label: 'Reports', path: '/reports', ready: true },
-  { slug: 'privacy', label: 'Privacy', path: '/privacy', ready: true },
-  { slug: 'terms', label: 'Terms', path: '/terms', ready: true },
-  { slug: 'whistleblowing', label: 'Whistleblowing', path: '/whistleblowing', ready: true },
-  { slug: 'contact', label: 'Contact', path: '/contact', ready: true },
+  { slug: 'home', label: 'Home', path: '/', section: 'Overview', icon: '⌂', ready: true },
+  { slug: 'about', label: 'About', path: '/about', section: 'Content', icon: '❖', ready: true },
 ] as const;
 
 export type KnownEditablePage = (typeof KNOWN_EDITABLE_PAGES)[number];
@@ -37,4 +34,17 @@ export function slugToRouteParam(slug: string): string[] {
 
 export function routeParamToSlug(param: string[]): string {
   return param.join('/');
+}
+
+/** Ordered list of unique sections (first-appearance order). */
+export function knownSectionOrder(): string[] {
+  const seen = new Set<string>();
+  const order: string[] = [];
+  for (const p of KNOWN_EDITABLE_PAGES) {
+    if (!seen.has(p.section)) {
+      seen.add(p.section);
+      order.push(p.section);
+    }
+  }
+  return order;
 }

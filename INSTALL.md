@@ -130,15 +130,21 @@ seeded in step 7.
 
 Open `lib/known-routes.ts`. It's a hard-coded list of the marketing
 routes the CMS considers editable (the pages that show up in
-`/admin/pages`). Delete SFH-specific entries and add your own project's
-route slugs.
+`/admin/pages`). Ships with `home` + `about` as placeholders — add
+your project's routes.
 
 Each entry has:
 - `slug` — matches the `pages.slug` column
 - `label` — shown in the admin
 - `path` — the public URL
+- `section` — group heading in `/admin/pages` (e.g. `Content`, `Legal`).
+  Section order = first-appearance order.
+- `icon` — any unicode glyph shown next to the label
 - `ready` — set to `false` if you haven't finished registering blocks
   for this page yet; the admin table will say "Blocks pending".
+
+The `/admin/pages` table groups by `section` and derives everything
+from these entries, so you never need to touch the listing UI.
 
 ## Step 10 — Wire the public site to the CMS
 

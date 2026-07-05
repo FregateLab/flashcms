@@ -1,6 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
-import { KNOWN_EDITABLE_PAGES } from '@/lib/known-routes';
+import {
+  KNOWN_EDITABLE_PAGES,
+  knownSectionOrder,
+} from '@/lib/known-routes';
 import { listPagesFromDb } from '@/lib/pages';
 
 function formatDate(d: Date | string | null) {
@@ -14,23 +17,6 @@ function formatDate(d: Date | string | null) {
   });
 }
 
-type SectionName = 'Overview' | 'Content' | 'Countries' | 'Legal';
-const SECTION_ORDER: SectionName[] = ['Overview', 'Content', 'Countries', 'Legal'];
-
-function sectionFor(slug: string): SectionName {
-  if (slug === 'home') return 'Overview';
-  if (slug.startsWith('countries')) return 'Countries';
-  if (['privacy', 'terms', 'whistleblowing'].includes(slug)) return 'Legal';
-  return 'Content';
-}
-
-function pageIcon(slug: string) {
-  if (slug === 'home') return '⌂';
-  if (slug.startsWith('countries')) return '⬢';
-  if (['privacy', 'terms', 'whistleblowing'].includes(slug)) return '§';
-  return '❖';
-}
-
 export default async function AdminPagesListPage() {
   const dbRows = await listPagesFromDb();
   const bySlug = new Map(dbRows.map((r) => [r.slug, r] as const));
@@ -40,10 +26,14 @@ export default async function AdminPagesListPage() {
     (p) => bySlug.get(p.slug)?.published,
   ).length;
 
-  const grouped = SECTION_ORDER.map((name) => ({
-    name,
-    rows: KNOWN_EDITABLE_PAGES.filter((p) => sectionFor(p.slug) === name),
-  })).filter((g) => g.rows.length > 0);
+  // Section grouping is derived from the KNOWN_EDITABLE_PAGES data, so
+  // each project can rearrange its own routes without editing this file.
+  const grouped = knownSectionOrder()
+    .map((name) => ({
+      name,
+      rows: KNOWN_EDITABLE_PAGES.filter((p) => p.section === name),
+    }))
+    .filter((g) => g.rows.length > 0);
 
   return (
     <>
@@ -82,7 +72,7 @@ export default async function AdminPagesListPage() {
                           className="tcell-primary__icon"
                           aria-hidden="true"
                         >
-                          {pageIcon(p.slug)}
+                          {p.icon}
                         </span>
                         <span className="tcell-primary__lines">
                           <span className="tcell-primary__title">
