@@ -146,6 +146,19 @@ Each entry has:
 The `/admin/pages` table groups by `section` and derives everything
 from these entries, so you never need to touch the listing UI.
 
+## Step 9b — Point PageEditor at your `globals.css`
+
+Open `app/(admin)/admin/(authed)/pages/PageEditor.tsx`. Near the top:
+
+```ts
+import '@/app/globals.css';
+```
+
+Adjust the path if your public-site stylesheet lives elsewhere — e.g.
+`@/app/(frontend)/globals.css` if you use a route-group layout. Puck
+copies this stylesheet into its preview iframe so the editor matches
+the live site.
+
 ## Step 10 — Wire the public site to the CMS
 
 For every public route you want to make editable through the CMS:

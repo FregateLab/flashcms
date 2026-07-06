@@ -5,7 +5,12 @@ import '@measured/puck/puck.css';
 // Load the public site's stylesheet so Puck's iframe preview matches
 // what visitors actually see. Puck copies parent-document stylesheets
 // into its preview iframe automatically.
-import '@/app/(frontend)/globals.css';
+//
+// Adjust this path to match where YOUR public-site stylesheet lives.
+// Common layouts:
+//   `@/app/globals.css`             (default flat layout)
+//   `@/app/(frontend)/globals.css`  (route-group layout)
+import '@/app/globals.css';
 // Editor-only overrides — force reveal animations to their "revealed"
 // state so blocks don't stay invisible in the preview.
 import './puck-preview.css';

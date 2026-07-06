@@ -2,14 +2,23 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "flashcms",
   "repository": "git@github.com:FregateLab/flashcms.git",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "releasedAt": "2026-07-06T00:00:00Z",
-  "summary": "Data-driven /admin/pages grouping — `section` and `icon` are now per-entry fields on KNOWN_EDITABLE_PAGES so each project only edits one file.",
+  "summary": "PageEditor globals.css import defaults to `@/app/globals.css` — the flat-layout default — instead of the route-group `@/app/(frontend)/globals.css` that broke fresh installs.",
   "notes": [
     "Snapshot cut from the sfh-group-website working codebase.",
     "See docs/extending.md for the pattern to add tables/blocks/routes."
   ],
   "changelog": [
+    {
+      "version": "1.0.4",
+      "date": "2026-07-06",
+      "changes": [
+        "Template's PageEditor.tsx now imports `@/app/globals.css` by default — matches the flat layout most Next.js projects use.",
+        "Docstring lists both common paths (flat vs route-group).",
+        "INSTALL.md Step 9b documents adjusting this import per-project."
+      ]
+    },
     {
       "version": "1.0.3",
       "date": "2026-07-06",
