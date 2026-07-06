@@ -130,6 +130,7 @@ credentials.
 | [ARCHITECTURE.md](ARCHITECTURE.md) | System overview, request flow, layering |
 | [docs/content-model.md](docs/content-model.md) | Pages, Posts, Media, Sites |
 | [docs/blocks.md](docs/blocks.md) | Puck block library, adding blocks, dynamic blocks |
+| [docs/dynamic-blocks.md](docs/dynamic-blocks.md) | Client-safe placeholder + server override pattern for DB-backed blocks |
 | [docs/analytics.md](docs/analytics.md) | Pageview + vitals pipeline, retention |
 | [docs/seo.md](docs/seo.md) | SEO fields + `buildCmsMetadata` |
 | [docs/site-settings.md](docs/site-settings.md) | Header/footer editing model |

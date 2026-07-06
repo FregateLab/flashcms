@@ -2,14 +2,23 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "flashcms",
   "repository": "git@github.com:FregateLab/flashcms.git",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "releasedAt": "2026-07-06T00:00:00Z",
-  "summary": "Puck editor renders in the parent DOM (iframe disabled) so imported stylesheets apply directly. Fixes blocks looking plain/unstyled in the admin preview.",
+  "summary": "Docs — new dynamic-blocks guide covering the client-safe placeholder + server override pattern for DB-backed Puck blocks.",
   "notes": [
     "Snapshot cut from the sfh-group-website working codebase.",
     "See docs/extending.md for the pattern to add tables/blocks/routes."
   ],
   "changelog": [
+    {
+      "version": "1.0.7",
+      "date": "2026-07-06",
+      "changes": [
+        "New docs/dynamic-blocks.md walks through the two-config pattern for data-driven blocks: client-safe placeholder in puck-config.tsx + async server override merged into serverPuckConfig in render-cms-page.tsx.",
+        "Recommends the hide-when-empty convention (dynamic blocks return null when the query is empty; the placeholder still renders in the editor so authors can arrange it).",
+        "README docs index links the new page."
+      ]
+    },
     {
       "version": "1.0.6",
       "date": "2026-07-06",
