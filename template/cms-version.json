@@ -2,14 +2,21 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "flashcms",
   "repository": "git@github.com:FregateLab/flashcms.git",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "releasedAt": "2026-07-06T00:00:00Z",
-  "summary": "Docs — new INSTALL step covering the multiple-root-layouts pattern so public chrome (Header/Footer) can't leak into the admin.",
+  "summary": "Puck editor renders in the parent DOM (iframe disabled) so imported stylesheets apply directly. Fixes blocks looking plain/unstyled in the admin preview.",
   "notes": [
     "Snapshot cut from the sfh-group-website working codebase.",
     "See docs/extending.md for the pattern to add tables/blocks/routes."
   ],
   "changelog": [
+    {
+      "version": "1.0.6",
+      "date": "2026-07-06",
+      "changes": [
+        "PageEditor now passes `iframe={{ enabled: false }}` to <Puck>. The default iframe often fails to inherit parent stylesheets, leaving preview blocks unstyled. Disabling the iframe makes globals.css + puck-preview.css apply directly."
+      ]
+    },
     {
       "version": "1.0.5",
       "date": "2026-07-06",

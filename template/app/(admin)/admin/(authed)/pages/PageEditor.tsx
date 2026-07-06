@@ -167,6 +167,11 @@ export default function PageEditor({
           config={puckConfig}
           data={data}
           onChange={(next) => setData(next)}
+          // Render Puck preview in the same DOM as the admin so parent
+          // stylesheets (globals.css + puck-preview.css) apply directly.
+          // Otherwise Puck's default iframe often fails to pick up
+          // stylesheets and blocks render unstyled.
+          iframe={{ enabled: false }}
         />
       </div>
 
