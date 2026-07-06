@@ -146,6 +146,43 @@ Each entry has:
 The `/admin/pages` table groups by `section` and derives everything
 from these entries, so you never need to touch the listing UI.
 
+## Step 9a — Isolate the admin from your public chrome
+
+The CMS admin ships as `app/(admin)/admin/layout.tsx` with its own
+`<html>` + `<body>`. If your project has a root `app/layout.tsx` that
+renders public chrome (Header / Footer / Topbar / analytics scripts),
+those tags will still wrap the admin because Next.js layouts nest.
+
+Fix: adopt Next.js's **multiple root layouts** pattern.
+
+1. Create `app/(frontend)/` and move `app/layout.tsx`, `app/page.tsx`,
+   and every public-facing route directory into it.
+2. Delete the now-empty root `app/layout.tsx`. There should be no
+   layout at `app/`.
+3. Keep `app/globals.css` at the root (both root layouts import it via
+   `@/app/globals.css`).
+
+Result:
+
+```
+app/
+  globals.css          ← shared
+  (frontend)/
+    layout.tsx         ← public root: <html> + Header/Footer
+    page.tsx           ← home
+    about/…            ← every public route
+  (admin)/
+    admin/
+      layout.tsx       ← admin root: <html> + admin chrome
+      (authed)/…
+      login/…
+  api/                 ← no layout needed
+```
+
+Now `/admin/*` requests are wrapped by ONLY the admin layout, and public
+routes are wrapped by ONLY the frontend layout. Neither chrome leaks
+into the other.
+
 ## Step 9b — Point PageEditor at your `globals.css`
 
 Open `app/(admin)/admin/(authed)/pages/PageEditor.tsx`. Near the top:

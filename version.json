@@ -2,14 +2,22 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "flashcms",
   "repository": "git@github.com:FregateLab/flashcms.git",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "releasedAt": "2026-07-06T00:00:00Z",
-  "summary": "PageEditor globals.css import defaults to `@/app/globals.css` — the flat-layout default — instead of the route-group `@/app/(frontend)/globals.css` that broke fresh installs.",
+  "summary": "Docs — new INSTALL step covering the multiple-root-layouts pattern so public chrome (Header/Footer) can't leak into the admin.",
   "notes": [
     "Snapshot cut from the sfh-group-website working codebase.",
     "See docs/extending.md for the pattern to add tables/blocks/routes."
   ],
   "changelog": [
+    {
+      "version": "1.0.5",
+      "date": "2026-07-06",
+      "changes": [
+        "INSTALL Step 9a: adopt Next.js multiple-root-layouts pattern — move public routes into app/(frontend)/ and delete the shared root app/layout.tsx so admin chrome and public chrome don't nest.",
+        "No template code changes — pure docs."
+      ]
+    },
     {
       "version": "1.0.4",
       "date": "2026-07-06",
