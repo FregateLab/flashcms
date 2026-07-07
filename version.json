@@ -2,14 +2,24 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "flashcms",
   "repository": "git@github.com:FregateLab/flashcms.git",
-  "version": "1.0.7",
-  "releasedAt": "2026-07-06T00:00:00Z",
-  "summary": "Docs — new dynamic-blocks guide covering the client-safe placeholder + server override pattern for DB-backed Puck blocks.",
+  "version": "1.0.8",
+  "releasedAt": "2026-07-07T00:00:00Z",
+  "summary": "Site-wide search — new /api/search endpoint + SearchOverlay client component. Searches CMS pages (published + latest draft), posts, and structural nav targets with snippet extraction.",
   "notes": [
     "Snapshot cut from the sfh-group-website working codebase.",
     "See docs/extending.md for the pattern to add tables/blocks/routes."
   ],
   "changelog": [
+    {
+      "version": "1.0.8",
+      "date": "2026-07-07",
+      "changes": [
+        "New app/api/search/route.ts — site-scoped search that scans pages.published, the latest page_versions draft, posts (published) + post_versions, plus known-routes labels and a per-project STATIC_NAV_TARGETS list. Extracts real text from Puck / TipTap JSONB via a recursive walker; returns 140-char snippets showing where each match was found; ranks exact-title > title starts-with > title contains > excerpt contains > everywhere.",
+        "New components/SearchOverlay.tsx — client overlay with debounced fetch, arrow-key navigation, keyboard shortcuts (↑↓ / Enter / Esc), grouped Pages + Posts results, and empty/no-match states.",
+        "Skip-list + heuristic filters image URLs (`/*.jpg`, `http://*`, `.pdf`, etc.) out of search snippets so results stay readable.",
+        "Template ships with STATIC_NAV_TARGETS = [] — populate per project for hand-coded sub-pages you want in search."
+      ]
+    },
     {
       "version": "1.0.7",
       "date": "2026-07-06",

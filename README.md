@@ -131,6 +131,7 @@ credentials.
 | [docs/content-model.md](docs/content-model.md) | Pages, Posts, Media, Sites |
 | [docs/blocks.md](docs/blocks.md) | Puck block library, adding blocks, dynamic blocks |
 | [docs/dynamic-blocks.md](docs/dynamic-blocks.md) | Client-safe placeholder + server override pattern for DB-backed blocks |
+| [docs/search.md](docs/search.md) | Site-wide search endpoint + SearchOverlay component |
 | [docs/analytics.md](docs/analytics.md) | Pageview + vitals pipeline, retention |
 | [docs/seo.md](docs/seo.md) | SEO fields + `buildCmsMetadata` |
 | [docs/site-settings.md](docs/site-settings.md) | Header/footer editing model |
