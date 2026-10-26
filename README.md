@@ -27,7 +27,13 @@ cms/
 │   ├── next.config.mjs
 │   ├── tsconfig.paths.json
 │   ├── env.example
-│   └── frontend-layout.tsx
+│   ├── frontend-layout.tsx
+│   ├── catch-all-page.tsx      → app/(frontend)/[...slug]/page.tsx (custom pages)
+│   ├── gallery-page.tsx        → app/(frontend)/gallery/page.tsx
+│   ├── blog-preview-page.tsx   → app/(frontend)/blog/[slug]/preview/page.tsx
+│   ├── unsubscribe-page.tsx    → app/(frontend)/unsubscribe/[token]/page.tsx
+│   ├── footer-newsletter.md
+│   └── cms-frontend.css        → append to your public stylesheet
 └── docs/                 ← per-topic deep dives
     ├── content-model.md
     ├── blocks.md
@@ -37,6 +43,9 @@ cms/
     ├── auth-users.md
     ├── media-storage.md
     ├── deployment.md
+    ├── newsletter.md
+    ├── gallery.md
+    ├── categories.md
     └── extending.md
 ```
 
@@ -46,12 +55,22 @@ cms/
   pages, and any content-heavy page. Pages are stored as structured JSON
   and rendered via `<Render>` on public routes.
 - **TipTap-based blog post editor** for long-form articles with a rich
-  content model (title, slug, excerpt, cover image, TipTap body).
+  content model (title, slug, excerpt, cover image, TipTap body), inline
+  image sizing + bubble menu, categories, and draft **Preview**.
+- **Custom pages + duplication** — create brand-new CMS pages at any
+  slug (served by a catch-all route) and copy one page's layout into
+  another.
+- **Categories** — per-site taxonomy for posts with public filtering.
+- **Photo gallery** — captioned photos managed in the admin, rendered
+  with a fullscreen lightbox.
+- **Newsletter** — footer sign-ups, welcome email (SendPipe), one-click
+  unsubscribe, admin list + CSV export.
 - **Press-room posts** — same `posts` table doubles as a press room with
   `external_url` and `press_type` (story / release / report) fields for
   linking out to LinkedIn, external write-ups, etc.
 - **Media library** with drag-drop upload to any S3-compatible bucket
-  (Dokwe storage out of the box), copy-URL, delete.
+  (Dokwe storage out of the box), client-side image compression,
+  crop-a-copy, copy-URL, delete.
 - **User management** with two roles (admin / editor), self-service
   profile + password change, admin-only user CRUD.
 - **Analytics** — first-party pageview tracking with no external service.
@@ -134,13 +153,15 @@ credentials.
 | [docs/dynamic-blocks.md](docs/dynamic-blocks.md) | Client-safe placeholder + server override pattern for DB-backed blocks |
 | [docs/search.md](docs/search.md) | Site-wide search endpoint + SearchOverlay component |
 | [docs/newsletter.md](docs/newsletter.md) | Footer sign-ups, welcome email, unsubscribe flow, CSV export |
+| [docs/gallery.md](docs/gallery.md) | Photo gallery admin, public page, lightbox |
+| [docs/categories.md](docs/categories.md) | Post taxonomy + public category filtering |
 | [docs/analytics.md](docs/analytics.md) | Pageview + vitals pipeline, retention |
 | [docs/seo.md](docs/seo.md) | SEO fields + `buildCmsMetadata` |
 | [docs/site-settings.md](docs/site-settings.md) | Header/footer editing model |
 | [docs/auth-users.md](docs/auth-users.md) | Auth.js config, roles, session shape |
 | [docs/media-storage.md](docs/media-storage.md) | S3 client, upload flow, migration |
 | [docs/deployment.md](docs/deployment.md) | Dokwe deployment + env |
-| [docs/updates.md](docs/updates.md) | In-CMS update check + webhook flow |
+| [docs/updates.md](docs/updates.md) | In-CMS update check + webhook flow, upgrading to 1.1.0 |
 | [docs/extending.md](docs/extending.md) | Adding new tables, actions, admin pages |
 
 ## Versioning

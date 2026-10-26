@@ -9,9 +9,13 @@ export const dynamic = 'force-dynamic';
 
 // RFC 4180-safe CSV cell escape. Wrap in quotes and double up any
 // internal quotes if the value contains a comma, quote, or newline.
+// Values starting with = + - @ (or tab/CR) are prefixed with a single
+// quote so spreadsheet apps don't evaluate them as formulas — email
+// addresses are visitor-supplied (CSV/formula injection).
 function csvCell(v: string | null | undefined): string {
   if (v == null) return '';
-  const s = String(v);
+  let s = String(v);
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
   if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
   return s;
 }

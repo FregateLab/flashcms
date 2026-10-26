@@ -86,7 +86,7 @@ export async function subscribeToNewsletter(
 
   // Fire-and-forget welcome email. The row is already saved — a mail
   // failure shouldn't undo the subscription.
-  await sendWelcomeEmail(parsed.data, unsubscribeToken, site.name).catch((err) => {
+  await sendWelcomeEmail(parsed.data, unsubscribeToken, site.name, site.domain).catch((err) => {
     console.error('[newsletter] welcome email failed:', err);
   });
 
@@ -94,32 +94,51 @@ export async function subscribeToNewsletter(
   return { ok: true };
 }
 
+// Origin used for links inside outgoing email. Prefer configuration
+// (SITE_URL, then https://<sites.domain>) over request headers: the
+// Host / X-Forwarded-Host headers are client-controlled, and anyone can
+// submit the public form with an arbitrary recipient — trusting them
+// would let an attacker make this site mail phishing links on its own
+// letterhead. Headers are only a last resort for local development.
+async function resolveSiteOrigin(siteDomain: string | null | undefined) {
+  const configured = process.env.SITE_URL?.trim().replace(/\/+$/, '');
+  if (configured) return configured;
+  if (siteDomain) {
+    return /^https?:\/\//.test(siteDomain)
+      ? siteDomain.replace(/\/+$/, '')
+      : `https://${siteDomain}`;
+  }
+  if (process.env.NODE_ENV === 'production') return '';
+  const h = await headers();
+  const proto = h.get('x-forwarded-proto') ?? 'http';
+  const host = h.get('x-forwarded-host') ?? h.get('host');
+  return host ? `${proto}://${host}` : '';
+}
+
 async function sendWelcomeEmail(
   to: string,
   unsubscribeToken: string,
   siteName: string,
+  siteDomain: string | null | undefined,
 ) {
-  // Resolve the request's own origin so unsubscribe links match the
-  // domain the visitor actually signed up on (avoids brand mismatch
-  // when the same code serves multiple sites).
-  const h = await headers();
-  const proto = h.get('x-forwarded-proto') ?? 'https';
-  const host = h.get('x-forwarded-host') ?? h.get('host');
-  const siteOrigin = host ? `${proto}://${host}` : '';
-
+  const siteOrigin = await resolveSiteOrigin(siteDomain);
   if (!siteOrigin) {
-    console.warn('[newsletter] no host header — skipping welcome email');
+    console.warn(
+      '[newsletter] no SITE_URL / sites.domain configured — skipping welcome email',
+    );
     return;
   }
 
-  // Pull the logo from the site's footer config so each SFH site's
-  // welcome email shows the right brand mark. Fallback resolves an
-  // absolute URL if the config value is a relative path.
+  // Pull the logo from the site's footer config so each site's welcome
+  // email shows the right brand mark. Fallback resolves an absolute URL
+  // if the config value is a relative path.
   const footer = await getFooterConfig();
   const rawLogo = footer.brand.imageUrl || '';
-  const logoUrl = /^https?:/.test(rawLogo)
-    ? rawLogo
-    : `${siteOrigin}${rawLogo.startsWith('/') ? '' : '/'}${rawLogo}`;
+  const logoUrl = !rawLogo
+    ? ''
+    : /^https?:/.test(rawLogo)
+      ? rawLogo
+      : `${siteOrigin}${rawLogo.startsWith('/') ? '' : '/'}${rawLogo}`;
 
   const { subject, html, text } = subscribeWelcomeEmail({
     siteOrigin,
@@ -135,7 +154,11 @@ async function sendWelcomeEmail(
 export async function unsubscribeByToken(
   token: string,
 ): Promise<{ ok: boolean; email?: string; alreadyUnsubscribed?: boolean }> {
-  if (!token || token.length < 8) return { ok: false };
+  // unsubscribe_token is a uuid column — a malformed value would make
+  // Postgres throw on the cast, so reject it up front.
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token ?? '')) {
+    return { ok: false };
+  }
 
   const [row] = await db
     .select()
@@ -180,7 +203,10 @@ export async function listSubscribers(
   const conditions = [eq(newsletterSubscribers.siteId, site.id)];
   if (filter === 'active') conditions.push(eq(newsletterSubscribers.status, 'subscribed'));
   if (filter === 'unsubscribed') conditions.push(eq(newsletterSubscribers.status, 'unsubscribed'));
-  if (trimmed) conditions.push(sql`${newsletterSubscribers.email} ILIKE ${'%' + trimmed + '%'}`);
+  if (trimmed) {
+    const pattern = '%' + trimmed.replace(/[\\%_]/g, (c) => '\\' + c) + '%';
+    conditions.push(sql`${newsletterSubscribers.email} ILIKE ${pattern}`);
+  }
 
   return db
     .select({
@@ -225,10 +251,13 @@ export async function adminUnsubscribe(
     await requireAdmin();
     const id = String(formData.get('id') ?? '');
     if (!id) return { error: 'Missing subscriber id.' };
+    const site = await getCurrentSite();
     await db
       .update(newsletterSubscribers)
       .set({ status: 'unsubscribed', unsubscribedAt: new Date() })
-      .where(eq(newsletterSubscribers.id, id));
+      .where(
+        and(eq(newsletterSubscribers.id, id), eq(newsletterSubscribers.siteId, site.id)),
+      );
     revalidatePath('/admin/newsletter');
     return { ok: true };
   } catch (err) {
@@ -244,10 +273,13 @@ export async function adminResubscribe(
     await requireAdmin();
     const id = String(formData.get('id') ?? '');
     if (!id) return { error: 'Missing subscriber id.' };
+    const site = await getCurrentSite();
     await db
       .update(newsletterSubscribers)
       .set({ status: 'subscribed', unsubscribedAt: null, subscribedAt: new Date() })
-      .where(eq(newsletterSubscribers.id, id));
+      .where(
+        and(eq(newsletterSubscribers.id, id), eq(newsletterSubscribers.siteId, site.id)),
+      );
     revalidatePath('/admin/newsletter');
     return { ok: true };
   } catch (err) {

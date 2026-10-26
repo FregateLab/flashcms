@@ -33,9 +33,15 @@ export default function MediaField({
       <div className="mediaField__controls">
         <input
           className="mediaField__url"
-          type="url"
+          // `type="text"` (not "url") on purpose — the field accepts
+          //   * absolute URLs from the Media picker (S3 uploads), AND
+          //   * absolute site paths for bundled /public assets
+          //     (e.g. "/assets/hero.jpg").
+          // Native url-validation rejects the second form, blocking Save
+          // whenever an editor kept a bundled default image.
+          type="text"
           value={url}
-          placeholder={placeholder ?? 'https://…'}
+          placeholder={placeholder ?? 'https://… or /assets/…'}
           onChange={(e) => onChange(e.target.value)}
         />
         <div className="mediaField__buttons">

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { auth } from '@/lib/auth';
 import { listSubscribers, subscriberCounts, type SubscriberFilter } from '@/lib/newsletter';
 import SubscriberActions from './SubscriberActions';
 
@@ -24,6 +25,18 @@ export default async function AdminNewsletterPage({
 }: {
   searchParams: Promise<{ filter?: string; q?: string }>;
 }) {
+  // Subscriber data is admin-only. Middleware already redirects editors
+  // (lib/auth.config.ts); this is the belt to that pair of braces so a
+  // misconfigured matcher renders a message instead of a 500.
+  const session = await auth();
+  if ((session?.user as { role?: string } | undefined)?.role !== 'admin') {
+    return (
+      <div className="admin-card admin-empty">
+        <p>The newsletter list is visible to admins only.</p>
+      </div>
+    );
+  }
+
   const params = await searchParams;
   const filter: SubscriberFilter =
     params.filter === 'unsubscribed' || params.filter === 'all'

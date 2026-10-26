@@ -12,7 +12,9 @@ export const authConfig: NextAuthConfig = {
       const { pathname } = request.nextUrl;
       const isAdmin = pathname.startsWith('/admin');
       const isLogin = pathname === '/admin/login';
-      const isUsers = pathname.startsWith('/admin/users');
+      // Admin-only sections: user management + newsletter subscriber data.
+      const isAdminOnly =
+        pathname.startsWith('/admin/users') || pathname.startsWith('/admin/newsletter');
       const signedIn = !!auth;
       const role = (auth?.user as { role?: string } | undefined)?.role;
 
@@ -24,8 +26,8 @@ export const authConfig: NextAuthConfig = {
       if (isLogin && signedIn) {
         return Response.redirect(new URL('/admin', request.nextUrl.origin));
       }
-      // Route-level role guard: /admin/users is admins only.
-      if (isUsers && signedIn && role !== 'admin') {
+      // Route-level role guard for admin-only sections.
+      if (isAdminOnly && signedIn && role !== 'admin') {
         return Response.redirect(new URL('/admin', request.nextUrl.origin));
       }
       return true;

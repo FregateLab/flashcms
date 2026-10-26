@@ -11,6 +11,10 @@ type Props = {
   // template so the "no-overrides" case Just Works.
   className?: string;
   rowClassName?: string;
+  /** Text next to the required consent checkbox. */
+  consentLabel?: string;
+  /** id for the email input — change it if you render two forms on a page. */
+  inputId?: string;
 };
 
 type State = { ok?: boolean; error?: string; already?: boolean };
@@ -20,6 +24,8 @@ export default function NewsletterForm({
   submitLabel,
   className,
   rowClassName = 'footer__signup-form',
+  consentLabel = 'I agree to receive newsletter emails and understand I can unsubscribe at any time.',
+  inputId = 'footer-email',
 }: Props) {
   const [state, setState] = useState<State>({});
   const [pending, setPending] = useState(false);
@@ -31,8 +37,7 @@ export default function NewsletterForm({
     const form = new FormData(e.currentTarget);
     // subscribeToNewsletter is a server action — calling it from a
     // client is a normal async RPC. We use useState instead of
-    // useActionState so this file works on React 18 (sfh-nigeria) as
-    // well as React 19 (this repo).
+    // useActionState so this file works on React 18 as well as React 19.
     const result = await subscribeToNewsletter({}, form);
     setState(result);
     setPending(false);
@@ -59,11 +64,11 @@ export default function NewsletterForm({
       className={className}
     >
       <div className={rowClassName}>
-        <label htmlFor="footer-email" className="visually-hidden">
+        <label htmlFor={inputId} className="visually-hidden">
           Email address
         </label>
         <input
-          id="footer-email"
+          id={inputId}
           type="email"
           name="email"
           placeholder={placeholder}
@@ -93,10 +98,7 @@ export default function NewsletterForm({
           disabled={pending}
           style={{ marginTop: 3 }}
         />
-        <span>
-          I agree to receive newsletter emails from SFH and understand I
-          can unsubscribe at any time.
-        </span>
+        <span>{consentLabel}</span>
       </label>
       {state.error && (
         <p

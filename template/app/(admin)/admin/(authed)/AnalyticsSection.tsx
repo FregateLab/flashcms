@@ -330,7 +330,13 @@ export default async function AnalyticsSection({
                     rel="noopener"
                     className="admin-analytics__listLink"
                   >
-                    {new URL(row.referrer ?? '').host}
+                    {(() => {
+                      try {
+                        return new URL(row.referrer ?? '').host;
+                      } catch {
+                        return row.referrer || '—';
+                      }
+                    })()}
                   </a>
                   <span className="admin-analytics__listCount">
                     {row.visits.toLocaleString()}

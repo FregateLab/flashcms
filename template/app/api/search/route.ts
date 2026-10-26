@@ -157,13 +157,18 @@ async function search(q: string): Promise<Hit[]> {
 
   const cmsPageHits: Hit[] = [];
   for (const p of allPages) {
+    const known = knownBySlug.get(p.slug);
+    // Custom pages (created at /admin/pages → "New page…") are served by
+    // the frontend catch-all only once published — an unpublished one
+    // would be a 404 link, so skip it. Known routes keep the
+    // published-or-latest-draft behaviour (their route always renders).
+    if (!known && !p.published) continue;
     const src = p.published ?? latestByPage.get(p.id);
     if (!src) continue;
     const strings = extractText(src);
     if (!strings.some((s) => s.toLowerCase().includes(lc))) continue;
     const firstMatch =
       strings.find((s) => s.toLowerCase().includes(lc)) ?? strings.join(' ');
-    const known = knownBySlug.get(p.slug);
     const url = known?.path ?? `/${p.slug}`;
     cmsPageHits.push({
       type: 'page',

@@ -20,8 +20,11 @@
 │  ├── /login           auth flow                                    │
 │  ├── /                dashboard + analytics                        │
 │  ├── /pages           list, editor (Puck)                          │
-│  ├── /posts           list, editor (TipTap)                        │
-│  ├── /media           library + uploader                           │
+│  ├── /posts           list, editor (TipTap) + draft preview        │
+│  ├── /categories      post taxonomy                                │
+│  ├── /gallery         captioned photos                             │
+│  ├── /media           library + uploader + crop                    │
+│  ├── /newsletter      subscribers + CSV export (admin-only)        │
 │  ├── /users           team management (admin-only)                 │
 │  ├── /site-settings   header + footer editor                       │
 │  └── /account         self-service profile                         │
@@ -32,6 +35,9 @@
 ┌────────────────────────────────────────────────────────────────────┐
 │  lib/ (server-only helpers + server actions)                       │
 │  ├── pages.ts, posts.ts, blog.ts, media.ts, users.ts               │
+│  ├── categories.ts, gallery.ts, newsletter.ts                      │
+│  ├── email.ts (SendPipe), emails/subscribe-welcome.ts              │
+│  ├── tiptap-extensions.ts (ResizableImage, shared client/server)   │
 │  ├── analytics.ts, analytics-actions.ts                            │
 │  ├── site-settings.ts, site-settings-actions.ts                    │
 │  ├── render-cms-page.tsx (Puck server config + Metadata builder)   │
@@ -47,6 +53,7 @@
 │  users · accounts · sessions · verification_tokens                 │
 │  sites · pages · page_versions · posts · post_versions · media     │
 │  analytics_events · analytics_vitals                               │
+│  post_categories · gallery_photos · newsletter_subscribers         │
 └────────────────────────────────────────────────────────────────────┘
                             ▲
                             │
@@ -101,8 +108,8 @@
 - The `authorized` callback:
   - Redirects unauthenticated `/admin/*` requests to `/admin/login`.
   - Redirects `/admin/login` for signed-in users to `/admin`.
-  - Redirects `/admin/users` to `/admin` when the JWT role is not
-    `admin`.
+  - Redirects `/admin/users` and `/admin/newsletter` to `/admin` when
+    the JWT role is not `admin`.
 - `lib/auth.ts` (Node runtime) holds the credentials provider and the
   Drizzle adapter. It's imported by route handlers, admin pages, and
   server components.

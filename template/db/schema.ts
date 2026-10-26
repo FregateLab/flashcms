@@ -93,6 +93,11 @@ export const pages = pgTable('pages', {
   // noindex?, canonical? }. Empty fields fall back to the block-level
   // page title and no OG image.
   seo: jsonb('seo'),
+  // Optional taxonomy link — shares the post_categories table so a
+  // custom landing page can be grouped with the posts it introduces.
+  categoryId: uuid('category_id').references(() => postCategories.id, {
+    onDelete: 'set null',
+  }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -128,6 +133,11 @@ export const posts = pgTable('posts', {
   externalUrl: text('external_url'),
   pressType: varchar('press_type', { length: 16 }).default('story').notNull(),
   isFeatured: boolean('is_featured').default(false).notNull(),
+  // Admin-defined taxonomy (see postCategories). Deleting a category
+  // leaves its posts uncategorised rather than deleting them.
+  categoryId: uuid('category_id').references(() => postCategories.id, {
+    onDelete: 'set null',
+  }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -237,5 +247,52 @@ export const newsletterSubscribers = pgTable(
   (t) => [
     uniqueIndex('newsletter_site_email_idx').on(t.siteId, t.email),
     index('newsletter_site_status_idx').on(t.siteId, t.status),
+  ],
+);
+
+// Post categories — admin-defined taxonomy per site. Managed at
+// /admin/categories; posts (and optionally pages) point at a row via
+// category_id. Public filters use the slug (/blog?category=<slug>).
+export const postCategories = pgTable(
+  'post_categories',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    siteId: uuid('site_id')
+      .notNull()
+      .references(() => sites.id, { onDelete: 'cascade' }),
+    slug: varchar('slug', { length: 64 }).notNull(),
+    name: text('name').notNull(),
+    description: text('description'),
+    sortOrder: integer('sort_order').default(0).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (t) => [
+    uniqueIndex('post_categories_site_slug_idx').on(t.siteId, t.slug),
+  ],
+);
+
+// Photo gallery — per-site collection of images with captions, managed
+// at /admin/gallery and rendered by the site's own /gallery route (see
+// snippets/gallery-page.tsx). Sort is entirely admin-controlled via
+// sortOrder; ties break newest-first.
+export const galleryPhotos = pgTable(
+  'gallery_photos',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    siteId: uuid('site_id')
+      .notNull()
+      .references(() => sites.id, { onDelete: 'cascade' }),
+    image: text('image').notNull(),
+    caption: text('caption').notNull(),
+    sortOrder: integer('sort_order').default(0).notNull(),
+    isPublished: boolean('is_published').default(true).notNull(),
+    createdBy: uuid('created_by').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (t) => [
+    index('gallery_photos_site_published_idx').on(t.siteId, t.isPublished),
   ],
 );

@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
 import { Render } from '@measured/puck';
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { getPublishedPageBySlug, type PageSeo } from '@/lib/pages';
+import { getCurrentSite } from '@/lib/site';
 import { puckConfig } from '@/lib/puck-config';
 import { PressFeatServer, PressListServer } from '@/lib/press-renderers';
-
-const SITE_TAG = 'Society for Family Health';
 
 /** Build Next `Metadata` for a CMS-driven route, reading the pages.seo
  *  column and falling back to sensible defaults. */
@@ -13,11 +12,19 @@ export async function buildCmsMetadata(
   slug: string,
   fallbackTitle: string,
 ): Promise<Metadata> {
-  const page = await getPublishedPageBySlug(slug);
+  const [page, site] = await Promise.all([
+    getPublishedPageBySlug(slug),
+    getCurrentSite(),
+  ]);
   const seo = (page?.seo as PageSeo | null) ?? null;
 
+  // Title suffix + og:site_name come from the sites row, so every
+  // tenant gets its own brand without editing this file.
   const rawTitle = (seo?.title?.trim() || page?.title?.trim() || fallbackTitle).trim();
-  const title = rawTitle.includes('SFH') ? rawTitle : `${rawTitle} · SFH`;
+  const suffix = site.name;
+  const title = rawTitle.toLowerCase().includes(suffix.toLowerCase())
+    ? rawTitle
+    : `${rawTitle} · ${suffix}`;
   const description = seo?.description?.trim() || undefined;
   const image = seo?.image || undefined;
   const canonical = seo?.canonical || undefined;
@@ -30,7 +37,7 @@ export async function buildCmsMetadata(
     openGraph: {
       title,
       description,
-      siteName: SITE_TAG,
+      siteName: site.name,
       images: image ? [image] : undefined,
       type: 'website',
     },
@@ -68,6 +75,40 @@ const serverPuckConfig = {
   },
 } satisfies typeof puckConfig;
 
+/**
+ * Returns rendered CMS JSX for `slug`, or null if the page isn't
+ * published yet. Callers render their own fallback for the null case
+ * (hand-coded content, notFound(), …). Calling a plain async function
+ * keeps async components out of JSX, so this stays React-18-types
+ * compatible.
+ *
+ *   const cms = await renderCmsPage('about');
+ *   if (cms) return cms;
+ *   return <HandCodedAbout />;
+ */
+export async function renderCmsPage(
+  slug: string,
+  opts?: { before?: ReactNode; after?: ReactNode },
+): Promise<ReactElement | null> {
+  const page = await getPublishedPageBySlug(slug);
+  if (!page?.published) return null;
+  return (
+    <main>
+      {opts?.before}
+      <Render
+        config={serverPuckConfig}
+        data={page.published as Parameters<typeof Render>[0]['data']}
+      />
+      {opts?.after}
+    </main>
+  );
+}
+
+/**
+ * JSX form kept for backwards compatibility with 1.0.x routes
+ * (`<CmsPage slug="about" />`). Shows a generic "Content pending"
+ * panel when nothing is published. Prefer `renderCmsPage` for new code.
+ */
 export async function CmsPage({
   slug,
   before,
@@ -77,28 +118,18 @@ export async function CmsPage({
   before?: ReactNode;
   after?: ReactNode;
 }) {
-  const page = await getPublishedPageBySlug(slug);
-  if (!page?.published) {
-    return (
-      <main>
-        <section className="aboutHero">
-          <div className="aboutHero__overlay" aria-hidden="true" />
-          <div className="container aboutHero__panel">
-            <span className="aboutHero__eyebrow">SFH</span>
-            <h1 className="aboutHero__title">Content pending</h1>
-          </div>
-        </section>
-      </main>
-    );
-  }
+  const rendered = await renderCmsPage(slug, { before, after });
+  if (rendered) return rendered;
+  const site = await getCurrentSite();
   return (
     <main>
-      {before}
-      <Render
-        config={serverPuckConfig}
-        data={page.published as Parameters<typeof Render>[0]['data']}
-      />
-      {after}
+      <section className="aboutHero">
+        <div className="aboutHero__overlay" aria-hidden="true" />
+        <div className="container aboutHero__panel">
+          <span className="aboutHero__eyebrow">{site.name}</span>
+          <h1 className="aboutHero__title">Content pending</h1>
+        </div>
+      </section>
     </main>
   );
 }
