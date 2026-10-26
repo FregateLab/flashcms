@@ -1,0 +1,379 @@
+/* =====================================================================
+   flashcms — public-site styles for CMS-driven components.
+
+   APPEND to your public stylesheet (e.g. app/globals.css). Covers:
+     1. .cms-gallery / .gphoto        — snippets/gallery-page.tsx grid
+     2. .lightbox                     — components/GalleryLightbox.tsx
+     3. .blog-img--small|medium|full  — editor image sizes (lib/tiptap-extensions.ts)
+     4. .articleLightbox              — components/BlogArticleLightbox.tsx
+
+   Uses your tokens when present and falls back to neutral values:
+     --primary  accent colour (focus rings, active thumbnail)
+     --surface  image placeholder background
+     --ink-3    caption colour
+   ===================================================================== */
+
+/* ---- 1. Gallery grid ------------------------------------------------ */
+.cms-gallery {
+    padding: clamp(32px, 6vw, 80px) 0 clamp(56px, 8vw, 112px);
+}
+.cms-gallery__grid {
+    list-style: none;
+    padding: 0;
+    margin: clamp(28px, 4vw, 48px) 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: clamp(12px, 1.6vw, 20px);
+}
+.gphoto {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.gphoto__media {
+    margin: 0;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: 12px;
+    background: var(--surface, #f3f4f6);
+}
+.gphoto__media img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.gphoto:hover .gphoto__media img { transform: scale(1.04); }
+.gphoto__caption {
+    margin: 0;
+    font-size: 13px;
+    color: var(--ink-3, #6b7280);
+    letter-spacing: 0.02em;
+    text-align: center;
+}
+@media (prefers-reduced-motion: reduce) {
+    .gphoto__media img { transition: none; }
+}
+
+/* ---- 2. Gallery lightbox ------------------------------------------- */
+.gphoto[data-gallery-index] {
+    cursor: zoom-in;
+}
+.gphoto[data-gallery-index]:focus-visible {
+    outline: 2px solid var(--primary, #111827);
+    outline-offset: 4px;
+    border-radius: 12px;
+}
+
+.lightbox {
+    position: fixed; inset: 0; z-index: 1000;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: 1fr auto;
+    align-items: center;
+    justify-items: center;
+    gap: clamp(8px, 1.4vw, 20px);
+    padding: clamp(20px, 3vw, 40px);
+    color: #fff;
+    animation: lightboxFadeIn 0.2s ease;
+}
+@keyframes lightboxFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+.lightbox__scrim {
+    position: fixed; inset: 0;
+    background: rgba(7, 12, 30, 0.92);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    z-index: -1;
+}
+
+/* Close button — top right */
+.lightbox__close {
+    position: fixed;
+    top: clamp(16px, 2vw, 28px);
+    right: clamp(16px, 2vw, 28px);
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 0;
+    background: rgba(255, 255, 255, 0.10);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+.lightbox__close:hover { background: rgba(255, 255, 255, 0.20); transform: scale(1.05); }
+
+/* Prev / next arrows */
+.lightbox__nav {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    border: 0;
+    background: rgba(255, 255, 255, 0.10);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    grid-row: 1;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+.lightbox__nav:hover { background: rgba(255, 255, 255, 0.20); transform: scale(1.05); }
+.lightbox__nav--prev { grid-column: 1; }
+.lightbox__nav--next { grid-column: 3; }
+
+/* Frame holding the active photo + caption */
+.lightbox__frame {
+    grid-column: 2;
+    grid-row: 1;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    max-width: 100%;
+    max-height: 100%;
+}
+.lightbox__image {
+    max-width: min(100%, 1100px);
+    max-height: 70vh;
+    width: auto;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.65);
+    animation: lightboxImageIn 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+@keyframes lightboxImageIn {
+    from { opacity: 0; transform: scale(0.98); }
+    to   { opacity: 1; transform: scale(1); }
+}
+.lightbox__caption {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 90vw;
+}
+.lightbox__count {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.70);
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.10);
+    border-radius: 999px;
+}
+.lightbox__caption-text {
+    font-family: var(--font-sans, inherit);
+    font-size: clamp(14px, 1.2vw, 16px);
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.92);
+    text-wrap: balance;
+}
+
+/* Thumbnail strip — bottom row, scrollable */
+.lightbox__thumbs {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    max-width: min(100%, 1100px);
+    padding: 8px 4px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+.lightbox__thumbs::-webkit-scrollbar { height: 6px; }
+.lightbox__thumbs::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.25); border-radius: 999px; }
+.lightbox__thumb {
+    flex: 0 0 auto;
+    width: clamp(56px, 7vw, 80px);
+    aspect-ratio: 4 / 3;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+    opacity: 0.55;
+    transition: opacity 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.lightbox__thumb:hover { opacity: 0.85; }
+.lightbox__thumb.is-active {
+    opacity: 1;
+    border-color: var(--primary, #111827);
+    transform: translateY(-2px);
+}
+.lightbox__thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Mobile — make the arrows overlay on the photo and shrink chrome */
+@media (max-width: 720px) {
+    .lightbox {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto;
+        padding: clamp(14px, 3vw, 24px);
+    }
+    .lightbox__frame { grid-column: 1; }
+    .lightbox__nav {
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 5;
+        width: 44px; height: 44px;
+    }
+    .lightbox__nav--prev { left: 14px; }
+    .lightbox__nav--next { right: 14px; }
+    .lightbox__nav:hover { transform: translateY(-50%) scale(1.05); }
+    .lightbox__image { max-height: 60vh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lightbox, .lightbox__image, .lightbox__thumb, .lightbox__nav, .lightbox__close {
+        animation: none;
+        transition: none;
+    }
+}
+
+/* ---- 3. Editor-controlled inline image sizes ------------------------
+   TipTap's ResizableImage renders <img class="blog-img blog-img--{size}">.
+   Scope these under whatever wraps your rendered post body. */
+.blog-article__body img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 1.4em auto;
+    border-radius: 10px;
+}
+/* Editor-controlled size classes (blog-img--small|medium|full).
+   Small/medium centre-align and shrink so paragraphs wrap around
+   visually via extra breathing room; full uses the default. */
+.blog-article__body img.blog-img--small {
+    width: 40%;
+    max-width: 320px;
+}
+.blog-article__body img.blog-img--medium {
+    width: 66%;
+    max-width: 560px;
+}
+.blog-article__body img.blog-img--full {
+    width: 100%;
+    max-width: none;
+}
+
+/* ---- 4. Article image lightbox -------------------------------------
+   Fullscreen viewer opened by BlogArticleLightbox when a reader taps
+   the hero or any inline article image. Includes prev/next buttons,
+   Esc/arrow keyboard shortcuts, and a small counter. Site-agnostic
+   styling — no site tokens so the same block works verbatim on any
+   site. */
+.articleLightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(4, 8, 16, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(20px, 5vw, 60px);
+    animation: articleLightbox-in 0.18s ease-out;
+}
+@keyframes articleLightbox-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+.articleLightbox__stage {
+    max-width: min(1200px, 92vw);
+    max-height: 88vh;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+.articleLightbox__stage img {
+    max-width: 100%;
+    max-height: 78vh;
+    object-fit: contain;
+    display: block;
+    border-radius: 6px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+.articleLightbox__caption {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: center;
+    max-width: 72ch;
+    padding: 0 8px;
+}
+.articleLightbox__close,
+.articleLightbox__nav {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.12);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    color: #fff;
+    border: 0;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+    font-family: sans-serif;
+    line-height: 1;
+}
+.articleLightbox__close:hover,
+.articleLightbox__nav:hover {
+    background: rgba(255, 255, 255, 0.24);
+}
+.articleLightbox__close {
+    top: clamp(14px, 3vw, 24px);
+    right: clamp(14px, 3vw, 24px);
+    width: 44px;
+    height: 44px;
+    font-size: 28px;
+}
+.articleLightbox__nav {
+    top: 50%;
+    transform: translateY(-50%);
+    width: 52px;
+    height: 52px;
+    font-size: 34px;
+}
+.articleLightbox__nav:hover { transform: translateY(-50%) scale(1.05); }
+.articleLightbox__nav--prev { left: clamp(12px, 3vw, 32px); }
+.articleLightbox__nav--next { right: clamp(12px, 3vw, 32px); }
+.articleLightbox__counter {
+    position: absolute;
+    bottom: clamp(18px, 3vw, 32px);
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-family: sans-serif;
+}
+@media (max-width: 640px) {
+    .articleLightbox__nav {
+        width: 42px;
+        height: 42px;
+        font-size: 26px;
+    }
+}

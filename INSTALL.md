@@ -104,9 +104,15 @@ If your host doesn't allow direct SQL connections from your dev machine,
 apply each file in `db/migrations/` manually via your Postgres console.
 The `_journal.json` records which have been applied.
 
+`db:migrate` runs `scripts/migrate.ts` (drizzle-orm's programmatic
+migrator — `drizzle-kit migrate` exits non-zero after success on some
+0.31.x versions, which breaks `db:migrate && …` chains). `db:migrate:kit`
+is still available.
+
 **Verify:** the following tables exist — `users`, `accounts`, `sessions`,
 `verification_tokens`, `sites`, `pages`, `page_versions`, `posts`,
-`post_versions`, `media`, `analytics_events`, `analytics_vitals`.
+`post_versions`, `media`, `analytics_events`, `analytics_vitals`,
+`newsletter_subscribers`, `post_categories`, `gallery_photos`.
 
 ## Step 7 — Seed the first site + admin
 
@@ -202,19 +208,41 @@ For every public route you want to make editable through the CMS:
 
 ```tsx
 // app/(frontend)/about/page.tsx
-import { CmsPage, buildCmsMetadata } from '@/lib/render-cms-page';
+import { renderCmsPage, buildCmsMetadata } from '@/lib/render-cms-page';
 
 export function generateMetadata() {
   return buildCmsMetadata('about', 'About Us');
 }
 
 export default async function AboutPage() {
-  return <CmsPage slug="about" />;
+  const cms = await renderCmsPage('about');
+  if (cms) return cms;
+  return <main>{/* hand-coded fallback until the CMS page is published */}</main>;
 }
 ```
 
-`slug` in `CmsPage` must match a row in `pages`; `buildCmsMetadata`
-reads SEO from `pages.seo`.
+`renderCmsPage(slug)` returns `null` until the page is published, so
+you choose the fallback. (`<CmsPage slug="about" />` from 1.0.x still
+works and shows a generic "Content pending" panel.) `buildCmsMetadata`
+reads SEO from `pages.seo` and suffixes titles with the site name.
+
+### Step 10a — Per-site frontend snippets (1.0.9+ / 1.1.0)
+
+Copy these from `snippets/` into your `(frontend)` group:
+
+| Snippet | Destination | Enables |
+|---|---|---|
+| `catch-all-page.tsx` | `app/(frontend)/[...slug]/page.tsx` | Custom pages created from `/admin/pages` → "New page…" |
+| `blog-preview-page.tsx` | `app/(frontend)/blog/[slug]/preview/page.tsx` | PostEditor "Preview" button |
+| `gallery-page.tsx` | `app/(frontend)/gallery/page.tsx` | Public gallery (`docs/gallery.md`) |
+| `unsubscribe-page.tsx` | `app/(frontend)/unsubscribe/[token]/page.tsx` | Newsletter unsubscribe links |
+| `footer-newsletter.md` | your Footer component | Newsletter sign-up form |
+| `cms-frontend.css` | append to your public stylesheet | Gallery grid, lightboxes, inline image sizes |
+
+If your site has hand-coded top-level routes that aren't in
+`lib/known-routes.ts`, add their first path segment to
+`RESERVED_SLUG_ROOTS` in `lib/pages.ts` so custom pages can't shadow
+them.
 
 For blog posts:
 

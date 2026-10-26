@@ -37,7 +37,7 @@ export default async function AdminPostsListPage() {
             coverImage: r.coverImage,
             excerpt: r.excerpt,
             externalUrl: r.externalUrl,
-            pressType: r.pressType as 'story' | 'release' | 'report',
+            pressType: r.pressType as 'story' | 'release' | 'report' | 'factsheet',
             isFeatured: r.isFeatured,
             isPublished: r.isPublished,
             updatedAt: r.updatedAt?.toISOString() ?? null,

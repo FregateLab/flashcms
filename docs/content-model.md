@@ -10,6 +10,9 @@
 | `posts` | Blog + press posts: title, slug, excerpt, cover, TipTap body, plus `external_url` / `press_type` / `is_featured`. |
 | `post_versions` | Snapshot per save for posts. |
 | `media` | Uploaded assets metadata; blob lives in S3. |
+| `post_categories` | Admin-defined taxonomy per site (1.1.0). `posts.category_id` / `pages.category_id` point here. See `docs/categories.md`. |
+| `gallery_photos` | Photo gallery: image URL + caption + sort order + published flag (1.1.0). See `docs/gallery.md`. |
+| `newsletter_subscribers` | Footer sign-ups with unsubscribe tokens (1.0.9). See `docs/newsletter.md`. |
 | `users`, `accounts`, `sessions`, `verification_tokens` | Auth.js schema. `users` extended with `role` (`admin` \| `editor`) and `password_hash`. |
 | `analytics_events`, `analytics_vitals` | Analytics pipeline (see `docs/analytics.md`). |
 
@@ -19,7 +22,8 @@ sites. Sites are keyed by `slug` (see `lib/site.ts::getCurrentSite`).
 ## Pages
 
 Model:
-- `slug` — matches a route in your app (e.g. `about`, `countries/nigeria`)
+- `slug` — matches a route in your app (e.g. `about`, `countries/nigeria`),
+  or a **custom page** created at runtime (see below)
 - `title` — used as fallback SEO title
 - `published` — Puck `Data` (`{ content: [], root: {}, zones: {} }`)
 - `published_at` — timestamp of last publish
@@ -28,12 +32,28 @@ Model:
 Read path:
 - `getPublishedPageBySlug(slug)` — cached, tagged with
   `['pages', 'page:<slug>']`
-- `getPageEditableData(slug)` — admin-only, returns the current publish
-  or the latest draft snapshot
+- `getPageEditableData(slug)` — admin-only, returns the latest
+  `page_versions` snapshot (so unpublished drafts survive a reload),
+  falling back to `published`
 
 Write path:
 - `savePage` server action in `lib/pages.ts`. Publishing writes to
   `published` + `published_at` and calls `revalidateTag`.
+
+### Custom pages + duplication (1.1.0)
+
+- **New page…** on `/admin/pages` (`createCustomPage`, admins) creates
+  a `pages` row at any kebab-case slug that isn't a known route or a
+  reserved root (`admin`, `api`, `blog`, `press`, `gallery`,
+  `unsubscribe`, … — `RESERVED_SLUG_ROOTS` in `lib/pages.ts`, extend it
+  per site). Custom pages are listed under a "Custom" group and served
+  by the frontend catch-all (`snippets/catch-all-page.tsx`) once
+  published.
+- **Duplicate from…** (`duplicatePage`, admins) copies another page's
+  published document (or latest draft) into a known route or existing
+  custom page as a new draft version; optionally publishes it.
+- `updatePageCategory` links a page to a `post_categories` row (no
+  admin UI yet — call it from your own control or a script).
 
 ## Posts
 
@@ -42,14 +62,25 @@ Same versioning pattern as pages, but content is TipTap JSON, not Puck.
 Extra columns for the press-room use case:
 - `external_url` — when set, the card in `/press` links out there
   instead of `/blog/<slug>`.
-- `press_type` — `story` / `release` / `report` — drives the filter
-  pills on `/press`.
+- `press_type` — `story` / `release` / `report` / `factsheet` — drives
+  the filter pills on `/press` and `/admin/posts`.
+- `category_id` — optional link to `post_categories` (1.1.0).
 - `is_featured` — surfaces the post in `PressFeatDynamic`.
 
 Read:
 - `getPublishedPosts()` in `lib/blog.ts` — cached, tagged
   `['posts', 'press']`.
 - `getFeaturedOrLatestPost()` — used by `PressFeatDynamic`.
+- `getPublishedPosts({ categorySlug })` filters by category;
+  `listVisibleCategories()` returns categories with ≥1 published post.
+
+Editor (1.1.0): inline image size control (small / medium / full via
+`lib/tiptap-extensions.ts::ResizableImage`, rendered as
+`blog-img--<size>` classes), image bubble menu (resize / replace /
+remove), sticky toolbar, alt-text prompt on insert, cover-image crop,
+category select, and **Preview** — saves a draft (`saveDraftForPreview`)
+and opens `/blog/<slug>/preview` (`snippets/blog-preview-page.tsx`).
+The admin editor loads the latest draft version first.
 
 ## Media
 

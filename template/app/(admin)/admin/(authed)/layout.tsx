@@ -3,6 +3,11 @@ import { Suspense } from 'react';
 import { auth, signOut } from '@/lib/auth';
 import TopProgress from './TopProgress';
 
+// Authenticated admin pages hit the DB on every render (sessions,
+// categories, posts, media). Static prerender at build time has no
+// DATABASE_URI and hangs — force per-request rendering.
+export const dynamic = 'force-dynamic';
+
 // Chrome shared by every authenticated admin page. /admin/login lives
 // outside this route group so it has no sidebar.
 export default async function AuthedAdminLayout({
@@ -37,7 +42,11 @@ export default async function AuthedAdminLayout({
           <span className="admin-nav__section">Content</span>
           <Link href="/admin/pages">Pages</Link>
           <Link href="/admin/posts">Posts</Link>
+          <Link href="/admin/categories">Categories</Link>
+          <Link href="/admin/gallery">Gallery</Link>
           <Link href="/admin/media">Media</Link>
+          {/* Subscriber data is admin-only (lib/newsletter.ts). */}
+          {isAdmin && <Link href="/admin/newsletter">Newsletter</Link>}
 
           <span className="admin-nav__section">Site</span>
           <Link href="/admin/site-settings">Header & Footer</Link>

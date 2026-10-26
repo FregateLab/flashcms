@@ -2,6 +2,13 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { listMedia, uploadMedia } from '@/lib/media';
+import ImageCropModal from './ImageCropModal';
+import {
+  MAX_CLIENT_UPLOAD_BYTES,
+  compressImage,
+  humanizeUploadError,
+  tooLargeMessage,
+} from './compressImage';
 
 type MediaRow = Awaited<ReturnType<typeof listMedia>>[number];
 
@@ -27,6 +34,7 @@ export default function MediaPicker({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [uploading, startUpload] = useTransition();
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function refresh() {
@@ -54,16 +62,30 @@ export default function MediaPicker({
 
   function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
-    const fd = new FormData();
-    for (const f of Array.from(files)) fd.append('files', f);
     setUploadError(null);
+    const list = Array.from(files);
     startUpload(async () => {
-      const res = await uploadMedia({}, fd);
-      if (res.error) {
-        setUploadError(res.error);
-        return;
+      try {
+        const prepared: File[] = [];
+        for (const f of list) {
+          const c = await compressImage(f);
+          if (c.size > MAX_CLIENT_UPLOAD_BYTES) {
+            setUploadError(tooLargeMessage(f.name, c.size));
+            return;
+          }
+          prepared.push(c);
+        }
+        const fd = new FormData();
+        for (const f of prepared) fd.append('files', f);
+        const res = await uploadMedia({}, fd);
+        if (res.error) {
+          setUploadError(humanizeUploadError(res.error));
+          return;
+        }
+        await refresh();
+      } catch (err) {
+        setUploadError(humanizeUploadError(err, list[0]?.name));
       }
-      await refresh();
     });
   }
 
@@ -144,38 +166,84 @@ export default function MediaPicker({
             </p>
           ) : (
             <ul className="mediaPicker__grid">
-              {filtered.map((m) => (
-                <li key={m.id}>
-                  <button
-                    type="button"
-                    className="mediaPicker__item"
-                    onClick={() => {
-                      onSelect(m.url);
-                      onClose();
-                    }}
-                  >
-                    <div className="mediaPicker__thumb">
-                      {m.contentType?.startsWith('image/') ? (
-                        <img src={m.url} alt={m.filename} loading="lazy" />
-                      ) : (
-                        <div className="mediaCard__doc">
-                          {m.contentType?.split('/')[1] ?? 'file'}
-                        </div>
-                      )}
-                    </div>
-                    <span
-                      className="mediaPicker__name"
-                      title={m.filename}
+              {filtered.map((m) => {
+                const isImage = !!m.contentType?.startsWith('image/');
+                return (
+                  <li key={m.id} style={{ position: 'relative' }}>
+                    <button
+                      type="button"
+                      className="mediaPicker__item"
+                      onClick={() => {
+                        onSelect(m.url);
+                        onClose();
+                      }}
                     >
-                      {m.filename}
-                    </span>
-                  </button>
-                </li>
-              ))}
+                      <div className="mediaPicker__thumb">
+                        {isImage ? (
+                          <img src={m.url} alt={m.filename} loading="lazy" />
+                        ) : (
+                          <div className="mediaCard__doc">
+                            {m.contentType?.split('/')[1] ?? 'file'}
+                          </div>
+                        )}
+                      </div>
+                      <span
+                        className="mediaPicker__name"
+                        title={m.filename}
+                      >
+                        {m.filename}
+                      </span>
+                    </button>
+                    {isImage && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCropSrc(m.url);
+                        }}
+                        title="Crop a copy of this image"
+                        style={{
+                          position: 'absolute',
+                          top: 6,
+                          right: 6,
+                          padding: '4px 8px',
+                          fontSize: 11,
+                          fontWeight: 600,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.06em',
+                          border: 0,
+                          borderRadius: 4,
+                          background: 'rgba(15, 23, 42, 0.85)',
+                          color: '#fff',
+                          cursor: 'pointer',
+                          backdropFilter: 'blur(4px)',
+                        }}
+                      >
+                        Crop
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
       </div>
+
+      <ImageCropModal
+        open={cropSrc !== null}
+        src={cropSrc}
+        initialAspect={21 / 9}
+        onClose={() => setCropSrc(null)}
+        onCropped={async (nextUrl) => {
+          setCropSrc(null);
+          // Refresh so the new cropped copy appears in the grid, then
+          // hand the URL back to whoever opened the picker.
+          await refresh();
+          onSelect(nextUrl);
+          onClose();
+        }}
+      />
     </div>
   );
 }

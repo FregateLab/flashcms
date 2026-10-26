@@ -11,7 +11,12 @@ import {
   uploadToStorage,
 } from '@/lib/storage';
 
-export type MediaFormState = { error?: string; ok?: boolean };
+export type MediaFormState = {
+  error?: string;
+  ok?: boolean;
+  /** Public URLs of the files stored by this call, in upload order. */
+  urls?: string[];
+};
 
 // Maximum single-file upload size we let through the server action.
 // Larger than this and editors should compress the image; we don't
@@ -55,6 +60,7 @@ export async function uploadMedia(
   const now = new Date();
   const yyyy = now.getUTCFullYear();
   const mm = String(now.getUTCMonth() + 1).padStart(2, '0');
+  const urls: string[] = [];
 
   for (const file of files) {
     if (file.size === 0) continue;
@@ -80,10 +86,11 @@ export async function uploadMedia(
       size: String(file.size),
       uploadedBy: session.user.id!,
     });
+    urls.push(url);
   }
 
   revalidatePath('/admin/media');
-  return { ok: true };
+  return { ok: true, urls };
 }
 
 // -------- delete --------------------------------------------------------

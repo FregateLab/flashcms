@@ -19,20 +19,28 @@ export default async function AdminPageEditorRoute({
   const slug = routeParamToSlug(slugSegments);
 
   const known = findKnownPage(slug);
-  if (!known || !known.ready) notFound();
-
   const [row, editable, seo] = await Promise.all([
     getPageBySlugForAdmin(slug),
     getPageEditableData(slug),
     getPageSeo(slug),
   ]);
 
+  // Two paths in: (1) a slug that IS in KNOWN_EDITABLE_PAGES — hard-coded
+  // route the admin can edit; must be ready. (2) a custom slug that
+  // exists as a pages row (created via /admin/pages "New page…"); served
+  // by the catch-all frontend route.
+  if (known) {
+    if (!known.ready) notFound();
+  } else if (!row) {
+    notFound();
+  }
+
   return (
     <PageEditor
       initial={{
-        slug: known.slug,
-        label: known.label,
-        path: known.path,
+        slug,
+        label: known?.label ?? row?.title ?? slug,
+        path: known?.path ?? `/${slug}`,
         data: editable,
         isPublished: !!row?.published,
         seo,

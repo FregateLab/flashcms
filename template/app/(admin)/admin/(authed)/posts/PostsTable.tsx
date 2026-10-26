@@ -10,13 +10,13 @@ type Row = {
   coverImage: string | null;
   excerpt: string | null;
   externalUrl: string | null;
-  pressType: 'story' | 'release' | 'report';
+  pressType: 'story' | 'release' | 'report' | 'factsheet';
   isFeatured: boolean;
   isPublished: boolean;
   updatedAt: string | null;
 };
 
-type Filter = 'all' | 'story' | 'release' | 'report';
+type Filter = 'all' | 'story' | 'release' | 'report' | 'factsheet';
 
 function formatDate(iso: string | null) {
   if (!iso) return '-';
@@ -35,6 +35,8 @@ function pressPill(type: Row['pressType']) {
       return { label: 'Release', cls: 'admin-pill--info' };
     case 'report':
       return { label: 'Report', cls: 'admin-pill--accent' };
+    case 'factsheet':
+      return { label: 'Factsheet', cls: 'admin-pill--info' };
     default:
       return { label: 'Story', cls: 'admin-pill--neutral' };
   }
@@ -45,7 +47,7 @@ export default function PostsTable({ rows }: { rows: Row[] }) {
   const [query, setQuery] = useState('');
 
   const counts = useMemo(() => {
-    const c = { all: rows.length, story: 0, release: 0, report: 0 } as Record<Filter, number>;
+    const c = { all: rows.length, story: 0, release: 0, report: 0, factsheet: 0 } as Record<Filter, number>;
     for (const r of rows) c[r.pressType]++;
     return c;
   }, [rows]);
@@ -82,6 +84,7 @@ export default function PostsTable({ rows }: { rows: Row[] }) {
         {pill('story', 'Stories')}
         {pill('release', 'Releases')}
         {pill('report', 'Reports')}
+        {pill('factsheet', 'Factsheets')}
         <input
           type="search"
           className="admin-search"

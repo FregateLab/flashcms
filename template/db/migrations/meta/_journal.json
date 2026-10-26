@@ -50,6 +50,34 @@
       "when": 1783254467908,
       "tag": "0006_magical_lady_ursula",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1788197761795,
+      "tag": "0007_wet_giant_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1788262028056,
+      "tag": "0008_premium_otto_octavius",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788268227646,
+      "tag": "0009_chief_blazing_skull",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790035200000,
+      "tag": "0010_gallery_photos",
+      "breakpoints": true
     }
   ]
 }

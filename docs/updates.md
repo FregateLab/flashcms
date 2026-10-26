@@ -190,3 +190,44 @@ Semver hint:
 - **major**: schema migrations that aren't backward compatible.
 - **minor**: new blocks / features / routes.
 - **patch**: bug fixes and copy tweaks.
+
+## Upgrading an existing site to 1.1.0
+
+1.1.0 bundles 1.0.9 (newsletter). From any 1.0.x install:
+
+1. **Sync files.** Copy `template/*` over your project as usual. If your
+   release step uses `rsync --delete`, make sure it doesn't delete
+   site-specific files you added under `db/migrations/`, `lib/` or
+   `scripts/` (exclude them, or keep site migrations in the CMS chain).
+2. **Dependencies.** Re-merge `snippets/package.json.merge.json`: adds
+   `react-easy-crop`, `@tiptap/extension-bubble-menu`, `happy-dom`
+   (peer of `@tiptap/html`), dev `sharp`; `db:migrate` now runs
+   `tsx scripts/migrate.ts`. If you installed 1.0.9 with SMTP, remove
+   `nodemailer` / `@types/nodemailer`.
+3. **Env.** Add `SENDPIPE_KEY`, `EMAIL_FROM`, `EMAIL_FROM_NAME`,
+   `SITE_URL`, optionally `NEXT_PUBLIC_MAX_UPLOAD_MB` (see
+   `snippets/env.example`). Remove the `SMTP_*` vars.
+4. **Migrate.** `npm run db:migrate` applies `0007` (newsletter),
+   `0008` (categories + `posts.category_id`), `0009`
+   (`pages.category_id`), `0010` (gallery). `0010` is idempotent.
+   `0001` was rewritten so fresh installs succeed (its original
+   `text → integer` cast always failed); databases that already applied
+   it skip it.
+5. **Frontend snippets.** Copy the new snippets into `app/(frontend)/`
+   — see INSTALL Step 10a — and append `snippets/cms-frontend.css`.
+6. **Optional code updates.** Switch routes from `<CmsPage slug>` to
+   `renderCmsPage(slug)`; pass `consentLabel` to `NewsletterForm`;
+   customise `WELCOME_EMAIL_THEME` / `WELCOME_EMAIL_COPY`; extend
+   `RESERVED_SLUG_ROOTS` in `lib/pages.ts`.
+
+Behaviour changes to be aware of:
+
+- The page and post editors now open the **latest saved version**
+  (draft or published) instead of the published one, so unpublished
+  drafts survive a reload.
+- Page titles from `buildCmsMetadata` are suffixed with `sites.name`
+  (was a hard-coded "SFH").
+- `/admin/newsletter` and its sidebar link are admin-only.
+- `db/index.ts` no longer throws at import time when `DATABASE_URI` is
+  missing (lets `next build` run without a DB); the error surfaces on
+  the first query instead.

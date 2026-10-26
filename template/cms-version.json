@@ -2,14 +2,50 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "flashcms",
   "repository": "git@github.com:FregateLab/flashcms.git",
-  "version": "1.0.8",
-  "releasedAt": "2026-07-07T00:00:00Z",
-  "summary": "Site-wide search — new /api/search endpoint + SearchOverlay client component. Searches CMS pages (published + latest draft), posts, and structural nav targets with snippet extraction.",
+  "version": "1.1.0",
+  "releasedAt": "2026-10-26T00:00:00Z",
+  "summary": "Categories, photo gallery, custom pages + page duplication, post editor upgrades (inline image sizes, preview), client-side image compression + cropping, SendPipe email transport, and a batch of security/bug fixes (incl. a broken 0001 migration on fresh installs). Includes 1.0.9 newsletter.",
   "notes": [
-    "Snapshot cut from the sfh-group-website working codebase.",
-    "See docs/extending.md for the pattern to add tables/blocks/routes."
+    "Snapshot cut from the sfh-group-website working codebase; 1.0.9–1.1.0 back-ported from sfh-nigeria-website.",
+    "See docs/extending.md for the pattern to add tables/blocks/routes.",
+    "See docs/updates.md → 'Upgrading an existing site to 1.1.0' for env, dependency, migration and snippet changes."
   ],
   "changelog": [
+    {
+      "version": "1.1.0",
+      "date": "2026-10-26",
+      "changes": [
+        "Back-ports the generic CMS work from the sfh-nigeria-website codebase (includes 1.0.9 newsletter). SFH-specific blocks, routes, chrome and the where-we-work map were left out.",
+        "Categories — new post_categories table (migration 0008) + posts.category_id (0008) + pages.category_id (0009), ON DELETE SET NULL. lib/categories.ts CRUD (site-scoped), /admin/categories with inline create/edit/delete, category select in PostEditor, getPublishedPosts({ categorySlug }) + listVisibleCategories() in lib/blog.ts, updatePageCategory in lib/pages.ts. See docs/categories.md.",
+        "Photo gallery — new gallery_photos table (migration 0010, idempotent SQL), lib/gallery.ts, /admin/gallery list/new/edit with media picker, 16:10 crop, caption, sort order, visibility toggle. New components/GalleryLightbox.tsx (fullscreen viewer, thumbnails, keyboard nav), snippets/gallery-page.tsx, scripts/seed-gallery.ts (JSON import). See docs/gallery.md.",
+        "Custom pages — /admin/pages 'New page…' (createCustomPage) creates CMS pages at any kebab-case slug outside known routes and RESERVED_SLUG_ROOTS; listed under a 'Custom' group; editable at /admin/pages/<slug>; served by snippets/catch-all-page.tsx. savePage accepts custom slugs.",
+        "Page duplication — 'Duplicate from…' (duplicatePage) copies another page's published doc (or latest draft) into a known route or existing custom page as a new draft, optionally publishing.",
+        "Post editor — ResizableImage TipTap extension (lib/tiptap-extensions.ts, shared with server render) with small/medium/full sizes; image bubble menu (resize / replace / remove); sticky toolbar with prominent '＋ Insert image'; alt-text prompt; cover-image crop; 'factsheet' press type; Preview button (saveDraftForPreview) opening /blog/<slug>/preview (snippets/blog-preview-page.tsx) + components/BlogArticleLightbox.tsx.",
+        "Media — client-side image compression (components/compressImage.ts: >1.5 MB → ≤2400 px JPEG) in MediaUploader / MediaPicker / ImageCropModal with friendly over-limit errors; cap configurable via NEXT_PUBLIC_MAX_UPLOAD_MB (default 15). New components/ImageCropModal.tsx (react-easy-crop) crops a copy into the media library; 'Crop' badge on picker images. uploadMedia now returns { urls }. MediaField accepts /public paths (type=text).",
+        "Newsletter — email transport switched from nodemailer/SMTP to the SendPipe HTTP API (SENDPIPE_KEY, EMAIL_FROM, EMAIL_FROM_NAME) with a 10 s timeout; nodemailer dependency removed. Welcome email made brand-neutral with WELCOME_EMAIL_THEME / WELCOME_EMAIL_COPY extension points and HTML escaping; NewsletterForm gains consentLabel / inputId props.",
+        "Security fixes — email links use SITE_URL or sites.domain instead of the client-controlled Host header; admin newsletter, category and gallery mutations are site-scoped; category ids validated against the current site; admin gallery reads auth-gated; unsubscribe token validated as a UUID; ILIKE wildcards escaped in subscriber search; CSV export guards against formula injection; /admin/newsletter admin-only in middleware, sidebar and page.",
+        "Bug fixes — migration 0001 rewritten (drop + re-add accounts.expires_at) because its text → integer ALTER failed on every fresh install; page/post editors load the latest saved version so drafts survive reloads; GalleryPhotoEditor no longer nests a delete <form> inside the save form; previewing a new post no longer creates a duplicate row on the next save; duplicating into a custom page works; search skips unpublished custom pages; analytics referrer list tolerates malformed URLs; db/index.ts no longer throws at import time without DATABASE_URI; authed admin layout is force-dynamic.",
+        "render-cms-page — new renderCmsPage(slug, opts) returning null when unpublished (React-18-types friendly); buildCmsMetadata and og:site_name use sites.name; <CmsPage> kept for compatibility.",
+        "Scripts — scripts/migrate.ts (programmatic migrator; db:migrate now runs it, drizzle-kit kept as db:migrate:kit), scripts/dump-page.ts, scripts/publish-page.ts, scripts/compress-public-images.ts (sharp).",
+        "Snippets/docs — new snippets catch-all-page.tsx, gallery-page.tsx, blog-preview-page.tsx, cms-frontend.css; package.json.merge.json adds react-easy-crop, @tiptap/extension-bubble-menu, happy-dom, sharp; env.example adds SENDPIPE_KEY / EMAIL_FROM / EMAIL_FROM_NAME / SITE_URL / NEXT_PUBLIC_MAX_UPLOAD_MB (SMTP_* removed). New docs/gallery.md, docs/categories.md; updated newsletter, content-model, media-storage, updates (1.1.0 upgrade guide), INSTALL, ARCHITECTURE, README."
+      ]
+    },
+    {
+      "version": "1.0.9",
+      "date": "2026-08-31",
+      "changes": [
+        "New newsletter module — table newsletter_subscribers (site-scoped, unique (site_id, email), per-row unsubscribe_token UUID) + migration 0007.",
+        "New lib/newsletter.ts server actions: subscribeToNewsletter (public), unsubscribeByToken (public), listSubscribers / subscriberCounts / adminUnsubscribe / adminResubscribe (admin).",
+        "New lib/email.ts — nodemailer over SMTP, provider-agnostic. No-ops with a warning when SMTP_HOST/USER/PASSWORD is missing, so subscribes still save.",
+        "New lib/emails/subscribe-welcome.ts — inline-styled branded HTML template. Logo pulled from site-settings.brand.imageUrl, so each site's mail carries its own logo without template edits.",
+        "New components/NewsletterForm.tsx — client form with required acknowledgement checkbox, pending/success/error states via useActionState.",
+        "New /admin/newsletter — filter tabs (Active/Unsubscribed/All), search, per-row toggle actions, top-right Export CSV button. Sidebar link added under Content.",
+        "New /api/newsletter/export — admin-only CSV (RFC 4180-safe), active subscribers only, filename <slug>-newsletter-<date>.csv.",
+        "New snippets/unsubscribe-page.tsx — drop at your frontend group's unsubscribe/[token]/page.tsx (per-site because (frontend) isn't part of the template).",
+        "New snippets/footer-newsletter.md — the two-line Footer.tsx change to wire in the new NewsletterForm.",
+        "SMTP env vars added to snippets/env.example. nodemailer + @types/nodemailer added to snippets/package.json.merge.json."
+      ]
+    },
     {
       "version": "1.0.8",
       "date": "2026-07-07",
