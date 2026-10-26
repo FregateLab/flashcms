@@ -77,12 +77,13 @@ cms/
   block library that's tightly styled for SFH. New sites will typically
   fork `lib/puck-config.tsx` and register their own blocks. See
   `docs/blocks.md`.
-- **Newsletter delivery** — the footer signup form has `action="#"`.
-  Wire it up to your email provider (Buttondown, Resend, Beehiiv, etc.).
+- **Newsletter campaigns** — flashcms collects sign-ups and sends the
+  welcome email (see `docs/newsletter.md`); export the subscriber CSV
+  into your campaign tool for actual sends.
 - **Sitemap / robots.txt** — add a `sitemap.ts` and `robots.ts` at the
   root of your `app/` when you're ready to indexpage. The
   `getPublishedPageBySlug` helper is a good source.
-- **Bulk export** — no CSV export yet.
+- **Bulk export** — only newsletter subscribers export to CSV.
 - **Localization** — single-locale for now.
 
 ## Quick start (target project)
@@ -132,6 +133,7 @@ credentials.
 | [docs/blocks.md](docs/blocks.md) | Puck block library, adding blocks, dynamic blocks |
 | [docs/dynamic-blocks.md](docs/dynamic-blocks.md) | Client-safe placeholder + server override pattern for DB-backed blocks |
 | [docs/search.md](docs/search.md) | Site-wide search endpoint + SearchOverlay component |
+| [docs/newsletter.md](docs/newsletter.md) | Footer sign-ups, welcome email, unsubscribe flow, CSV export |
 | [docs/analytics.md](docs/analytics.md) | Pageview + vitals pipeline, retention |
 | [docs/seo.md](docs/seo.md) | SEO fields + `buildCmsMetadata` |
 | [docs/site-settings.md](docs/site-settings.md) | Header/footer editing model |

@@ -38,6 +38,7 @@ export default async function AuthedAdminLayout({
           <Link href="/admin/pages">Pages</Link>
           <Link href="/admin/posts">Posts</Link>
           <Link href="/admin/media">Media</Link>
+          <Link href="/admin/newsletter">Newsletter</Link>
 
           <span className="admin-nav__section">Site</span>
           <Link href="/admin/site-settings">Header & Footer</Link>

@@ -2,14 +2,31 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "flashcms",
   "repository": "git@github.com:FregateLab/flashcms.git",
-  "version": "1.0.8",
-  "releasedAt": "2026-07-07T00:00:00Z",
-  "summary": "Site-wide search — new /api/search endpoint + SearchOverlay client component. Searches CMS pages (published + latest draft), posts, and structural nav targets with snippet extraction.",
+  "version": "1.0.9",
+  "releasedAt": "2026-08-31T00:00:00Z",
+  "summary": "Newsletter — footer subscribe form with acknowledgement checkbox, admin list with unsubscribe/resubscribe + CSV export, branded welcome email via SMTP, one-click unsubscribe token flow.",
   "notes": [
     "Snapshot cut from the sfh-group-website working codebase.",
-    "See docs/extending.md for the pattern to add tables/blocks/routes."
+    "See docs/extending.md for the pattern to add tables/blocks/routes.",
+    "See docs/newsletter.md for the SMTP env vars and per-site integration steps."
   ],
   "changelog": [
+    {
+      "version": "1.0.9",
+      "date": "2026-08-31",
+      "changes": [
+        "New newsletter module — table newsletter_subscribers (site-scoped, unique (site_id, email), per-row unsubscribe_token UUID) + migration 0007.",
+        "New lib/newsletter.ts server actions: subscribeToNewsletter (public), unsubscribeByToken (public), listSubscribers / subscriberCounts / adminUnsubscribe / adminResubscribe (admin).",
+        "New lib/email.ts — nodemailer over SMTP, provider-agnostic. No-ops with a warning when SMTP_HOST/USER/PASSWORD is missing, so subscribes still save.",
+        "New lib/emails/subscribe-welcome.ts — inline-styled branded HTML template. Logo pulled from site-settings.brand.imageUrl, so each site's mail carries its own logo without template edits.",
+        "New components/NewsletterForm.tsx — client form with required acknowledgement checkbox, pending/success/error states via useActionState.",
+        "New /admin/newsletter — filter tabs (Active/Unsubscribed/All), search, per-row toggle actions, top-right Export CSV button. Sidebar link added under Content.",
+        "New /api/newsletter/export — admin-only CSV (RFC 4180-safe), active subscribers only, filename <slug>-newsletter-<date>.csv.",
+        "New snippets/unsubscribe-page.tsx — drop at your frontend group's unsubscribe/[token]/page.tsx (per-site because (frontend) isn't part of the template).",
+        "New snippets/footer-newsletter.md — the two-line Footer.tsx change to wire in the new NewsletterForm.",
+        "SMTP env vars added to snippets/env.example. nodemailer + @types/nodemailer added to snippets/package.json.merge.json."
+      ]
+    },
     {
       "version": "1.0.8",
       "date": "2026-07-07",

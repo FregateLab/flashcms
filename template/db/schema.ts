@@ -7,6 +7,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
@@ -212,3 +213,29 @@ export const media = pgTable('media', {
   uploadedBy: uuid('uploaded_by').references(() => users.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+// Newsletter subscribers — public visitors who submitted the footer
+// form. status flips to 'unsubscribed' when they follow the token link
+// in the welcome email (or an admin toggles it). We keep the row after
+// unsubscribe rather than deleting it, so re-subscribes don't lose
+// history and the export CSV can still filter cleanly.
+export const newsletterSubscribers = pgTable(
+  'newsletter_subscribers',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    siteId: uuid('site_id')
+      .notNull()
+      .references(() => sites.id, { onDelete: 'cascade' }),
+    email: varchar('email', { length: 320 }).notNull(),
+    status: varchar('status', { length: 16 }).notNull().default('subscribed'),
+    ackConsent: boolean('ack_consent').notNull().default(false),
+    unsubscribeToken: uuid('unsubscribe_token').defaultRandom().notNull().unique(),
+    source: varchar('source', { length: 32 }).default('footer'),
+    subscribedAt: timestamp('subscribed_at').defaultNow().notNull(),
+    unsubscribedAt: timestamp('unsubscribed_at'),
+  },
+  (t) => [
+    uniqueIndex('newsletter_site_email_idx').on(t.siteId, t.email),
+    index('newsletter_site_status_idx').on(t.siteId, t.status),
+  ],
+);

@@ -50,6 +50,13 @@
       "when": 1783254467908,
       "tag": "0006_magical_lady_ursula",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1788197761795,
+      "tag": "0007_wet_giant_man",
+      "breakpoints": true
     }
   ]
 }
